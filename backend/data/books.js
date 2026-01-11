@@ -164,11 +164,10 @@ const books = [
 ]
 
 
-// Duplicate until you reach 20 books (change titles slightly)
 while (books.length < 20) {
   books.push({
-    ...books[books.length % 5],
-    title: books[books.length % 5].title + " Vol " + books.length,
+    ...books[books.length % 1],
+    title: books[books.length % 1].title + " Vol " + books.length,
   });
 }
 

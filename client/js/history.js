@@ -12,8 +12,6 @@ async function loadHistory() {
   }
 
   const data = await res.json();
-  console.log("History API response:", data);
-
 
   if (!data.history || data.history.length === 0) {
     document.getElementById("history").innerText = "No borrow history yet";
@@ -24,15 +22,25 @@ async function loadHistory() {
 container.innerHTML = "";
 
 container.innerHTML = data.history
-  .map(b => `
-    <div style="border-bottom:1px solid #ddd; padding:10px 0">
-      <p><b>Book:</b> ${b.book ? b.book.title : "Unknown Book"}</p>
-      <p><b>Total:</b> ₹${b.totalCost + b.totalOverdue}</p>
-      <p><b>Status:</b> ${b.status}</p>
-    </div>
-  `)
-  .join("");
+    .map(b => `
+      <div class="history-card">
+        <h4>${b.book?.title || "Unknown Book"}</h4>
 
+        <p><b>Borrow Date:</b> ${formatDate(b.borrowDate)}</p>
+        <p><b>Due Date:</b> ${formatDate(b.dueDate)}</p>
+        <p><b>Total Cost:</b> ₹${b.totalCost} including ₹${b.totalOverdue} overdue fees</p>
+        <p><b>Status:</b> ${b.status}</p>
+      </div>
+    `)
+    .join("");
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
 }
 
 loadHistory();

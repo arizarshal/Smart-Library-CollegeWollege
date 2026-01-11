@@ -21,7 +21,7 @@ const userSchema = new Schema({
   },
 }, { timestamps: true });
 
-// Hash password before saving
+
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   
@@ -29,7 +29,7 @@ userSchema.pre('save', async function () {
   this.password = await hash(this.password, salt);
 });
 
-// Method to compare password
+
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await compare(candidatePassword, this.password);
 };

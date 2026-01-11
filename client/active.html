@@ -1,84 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Active Borrow</title>
-    <link rel="stylesheet" href="css/styles.css" />
+  <meta charset="UTF-8" />
+  <title>Active Borrow</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-    <div class="container">
+
+<div class="container">
   <h2>Active Borrow</h2>
   <div id="active"></div>
 </div>
 
 <script src="js/api.js"></script>
-<script>
-function toInputDate(dateStr) {
-  return new Date(dateStr).toISOString().split("T")[0];
-}
-
-async function loadActive() {
-  const res = await apiFetch("/borrow/active");
-  const data = await res.json();
-
-  if (!data || !data.book) {
-    document.getElementById("active").innerText = "No active borrow";
-    return;
-  }
-  console.log(data);
-
-  document.getElementById("active").innerHTML = `
-    <p>Book name: ${data.book.title}</p>
-    <p>Borrow Date: ${new Date(data.borrowDate).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    })}</p>
-    <p>Due Date: ${new Date(data.dueDate).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    })}</p>
-
-    <input id="returnDate" type="date" />
-    <button onclick="submitReturn('${data.borrowId}')">Return</button>
-  `;
-
-    // 🔥 Restrict calendar dates
-  const returnInput = document.getElementById("returnDate");
-  returnInput.min = toInputDate(data.borrowDate);
-  returnInput.max = toInputDate(data.dueDate);
-  returnInput.value = toInputDate(data.dueDate);
-}
-
-async function submitReturn(id) {
-  const returnDateInput = document.getElementById("returnDate");
-  const returnDate = returnDateInput.value;
-
-   if (!returnDate) {
-    alert("Please select a return date");
-    return;
-  }
-
-  const res = await apiFetch(`/borrow/${id}/submit`, {
-    method: "POST",
-    body: JSON.stringify({ returnDate })
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    alert(data.message || "Return failed");
-    return;
-  }
-
-  alert("Returned successfully!");
-  window.location.href = "history.html";
-}
-
-loadActive();
-</script>
+<script src="js/active.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/navbar.js"></script>
 

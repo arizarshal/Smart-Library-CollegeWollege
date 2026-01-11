@@ -1,6 +1,5 @@
 import Book from "../models/book.js";
 
-// GET /books (only available books)
 export const getAllBooks = async (req, res) => {
   try {
     const books = await Book.find({ isBorrowed: false });
@@ -12,7 +11,6 @@ export const getAllBooks = async (req, res) => {
   }
 };
 
-// GET /books/:bookId
 export const getBookById = async (req, res) => {
   try {
     const book = await Book.findById(req.params.bookId);
