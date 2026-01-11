@@ -1,0 +1,159 @@
+/* ===== RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  background: #f4f6f8;
+  color: #222;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 16px;
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+/* ===== BOOK GRID ===== */
+#books {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 22px;
+}
+
+/* ===== BOOK CARD ===== */
+.book-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== BOOK IMAGE ===== */
+.book-image {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+/* ===== BOOK INFO ===== */
+.book-info {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.book-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.book-author {
+  font-size: 13px;
+  color: #666;
+}
+
+.book-price {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a7cff;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  margin-top: 12px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #0a7cff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #055ec5;
+}
+
+/* ===== INPUTS ===== */
+input[type="number"],
+input[type="date"],
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* ===== ACTIVE / HISTORY ===== */
+#active p,
+#history p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+/* ===== NAVBAR SUPPORT ===== */
+.navbar {
+  background: #ffffff;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.nav-right a,
+.nav-right button {
+  margin-left: 14px;
+  text-decoration: none;
+  font-size: 14px;
+  color: #0a7cff;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-right button:hover,
+.nav-right a:hover {
+  text-decoration: underline;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  h2 {
+    font-size: 18px;
+  }
+
+  .book-image {
+    height: 180px;
+  }
+}

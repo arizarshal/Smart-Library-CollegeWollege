@@ -1,0 +1,73 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow History</title>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+    <div class="container">
+  <h2>Borrow History</h2>
+  <div id="history"></div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+async function loadHistory() {
+  const res = await apiFetch("/borrow/history");
+  const data = await res.json();
+  console.log(data.history);
+
+   if (!data.history || data.history.length === 0) {
+    document.getElementById("history").innerText = "No history found";
+    return;
+  }
+
+  document.getElementById("history").innerHTML =
+    data.history.map(b => `
+      <p>
+        <strong>Book title:</strong>
+        ${b.bookId ? b.bookId.title : "Unknown Book"} <br>
+        <strong>Total Cost:</strong>
+        ₹${b.totalCost + b.totalOverdue}
+      </p>
+      <hr>
+    `).join("");
+}
+
+loadHistory();
+
+</script>
+<script src="js/auth.js"></script>
+<script src="js/navbar.js"></script>
+
+</body>
+</html> -->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Borrow History</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="container">
+  <h2>Borrow History</h2>
+  <div id="history"></div>
+</div>
+
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/history.js"></script>
+
+</body>
+</html>
