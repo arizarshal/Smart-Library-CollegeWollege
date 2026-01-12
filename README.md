@@ -61,7 +61,7 @@ A full-stack web application to manage book borrowing, cost calculation, overdue
 - Validator (email verification)
 
 ### 🔗 **Postman API Docs:**  
-https://documenter.getpostman.com/view/XXXXXX/Smart-Library-Borrowing
+https://documenter.getpostman.com/view/18322190/2sBXVfjrnq
 
 ### Available APIs
 - Authentication (Register / Login / Profile)
