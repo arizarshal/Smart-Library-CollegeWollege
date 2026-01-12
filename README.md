@@ -58,5 +58,18 @@ A full-stack web application to manage book borrowing, cost calculation, overdue
 - Rate Limiting
 - Morgan (logging)
 - CORS
+- Validator (email verification)
 
+### 🔗 **Postman API Docs:**  
+https://documenter.getpostman.com/view/XXXXXX/Smart-Library-Borrowing
 
+### Available APIs
+- Authentication (Register / Login / Profile)
+- Books (List, Get by ID)
+- Borrow Management
+- Active Borrow
+- Borrow History
+- Payments
+- Dashboard Summary
+
+> Note: Authentication APIs require JWT token in Authorization header.

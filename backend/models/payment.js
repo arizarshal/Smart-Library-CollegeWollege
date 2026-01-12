@@ -4,20 +4,26 @@ const paymentSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: [true, "User is required for payment"],
+    index: true
   },
   borrowId: {
     type: Schema.Types.ObjectId,
     ref: 'Borrow',
-    required: true
+    required: [true, "Borrow is required for payment"],
+    index: true
   },
   amount: {
     type: Number,
-    required: true
+    required: [true, "Amount is required for payment"],
+    min: [0, "Amount cannot be negative"]
   },
   status: {
     type: String,
-    enum: ['PENDING', 'PAID'],
+    enum: {
+      values: ['PENDING', 'PAID'],
+      message: '{VALUE} is not a valid payment status'
+    },
     default: 'PENDING'
   }
 }, { timestamps: true });

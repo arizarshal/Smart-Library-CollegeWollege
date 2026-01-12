@@ -1,10 +1,32 @@
+import validator from "validator";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 
 export const registerService = async ({ name, email, password }) => {
   if (!name || !email || !password) {
     throw new Error("All fields required");
   }
+
+  if (!validator.isEmail(email)) {
+  const err = new Error("Invalid email address");
+  err.statusCode = 400;
+  throw err;
+}
+
+// if (!validator.isStrongPassword(password, {
+//   minLength: 8,
+//   minLowercase: 1,
+//   minUppercase: 1,
+//   minNumbers: 1,
+//   minSymbols: 1,
+// })) {
+//   const err = new Error(
+//     "Password must be at least 8 characters"  and include uppercase, lowercase, number, and special character"
+//   );
+//   err.statusCode = 400;
+//   throw err;
+// }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -33,9 +55,7 @@ export const registerService = async ({ name, email, password }) => {
 };
 
 
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import User from "../models/user.js";
+
 
 export const loginService = async ({ email, password }) => {
   if (!email || !password) {

@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 import Borrow from "../models/borrow.js";
 import Book from "../models/book.js";
+import Payment from "../models/payment.js"; 
+import User from "../models/user.js";
+
 
 const MAX_BORROW_DAYS = 14;
 
