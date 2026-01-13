@@ -15,7 +15,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5000",
-  "https://smart-library-frontend.onrender.com",
+  process.env.CLIENT_URL,
 ];
 
 app.use(
@@ -41,7 +41,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 app.get("/", (req, res) => {
-  res.send("Smart Library Borrowing API 🚀");
+  res.status(200).send("🚀 Smart Library Borrowing API is running");
 });
 
 app.use("/api", apiLimiter);
