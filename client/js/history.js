@@ -1,6 +1,6 @@
 // Redirect if not logged in
 if (!localStorage.getItem("token")) {
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 }
 
 async function loadHistory() {
