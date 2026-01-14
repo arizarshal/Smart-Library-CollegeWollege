@@ -1,4 +1,4 @@
-async function login() {
+window.login = async function login() {
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
 
@@ -11,7 +11,6 @@ async function login() {
   });
 
   const data = await res.json();
-  console.log(data);
 
   if (res.ok) {
     localStorage.setItem("token", data.token);
