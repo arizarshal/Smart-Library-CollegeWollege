@@ -4,5 +4,3 @@ const CONFIG = {
       ? "http://localhost:5000"
       : "https://smart-library-collegewollege.onrender.com/",
 };
-
-export default CONFIG;  
