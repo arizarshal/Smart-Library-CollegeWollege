@@ -53,7 +53,7 @@ async function signup() {
 
   if (res.ok) {
     alert("Signup successful. Please login.");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
   } else {
     alert(data.message || "Signup failed");
   }

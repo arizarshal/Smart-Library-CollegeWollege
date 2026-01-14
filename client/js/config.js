@@ -1,5 +1,8 @@
-// config.js
 const CONFIG = {
-  API_BASE_URL_DEV: "http://localhost:5000",
-  API_BASE_URL_PROD: "https://smart-library-collegewollege.onrender.com"
+  API_BASE_URL:
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://smart-library-collegewollege.onrender.com/",
 };
+
+export default CONFIG;  

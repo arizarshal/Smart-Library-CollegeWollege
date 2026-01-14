@@ -1,7 +1,6 @@
-// const BASE_URL = CONFIG.API_BASE_URL_DEV; // Development URL
-// const BASE_URL = CONFIG.API_BASE_URL_PROD; // Production URL
-// const BASE_URL = "http://localhost:5000";
-const BASE_URL = "https://smart-library-collegewollege.onrender.com"
+import CONFIG from "./config.js";
+
+const BASE_URL = CONFIG.API_BASE_URL;
 
 function getToken() {
   return localStorage.getItem("token");
@@ -13,7 +12,7 @@ async function apiFetch(url, options = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` })
-    }
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   });
 }
