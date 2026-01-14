@@ -2,6 +2,17 @@
 
 A full-stack web application to manage book borrowing, cost calculation, overdue handling, and user balances among students.
 
+🌐 Live Project Links
+
+## Frontend (Live UI):
+👉 https://smart-library-collegewollege-frontend.onrender.com
+
+## Backend (Live API):
+👉 https://smart-library-collegewollege.onrender.com
+
+The backend exposes REST APIs consumed by the frontend.
+Opening the backend URL directly will show a health-check message.
+
 ---
 
 ## 🚀 Features
