@@ -19,8 +19,8 @@ const userSchema = new Schema({
     minlength: [5, "Email must be at least 5 characters"],
     maxlength: [100, "Email cannot exceed 100 characters"],
     validate: {
-    validator: (value) => validator.isEmail(value),
-    message: "Please enter a valid email address",
+      validator: (value) => validator.isEmail(value),
+      message: "Please enter a valid email address",
   },
   },
   password: {
