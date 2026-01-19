@@ -1,8 +1,13 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { validateBorrow, calculateBorrowCost, createBorrow, getActiveBorrow,
+import { validateBorrow, 
+  calculateBorrowCost, 
+  createBorrow, 
+  getActiveBorrow,
   getBorrowSummary,
-  submitBorrow, getBorrowHistory} from "../controllers/borrowController.js";
+  submitBorrow, 
+  getBorrowHistory
+} from "../controllers/borrowController.js";
 
 
 const router = express.Router();

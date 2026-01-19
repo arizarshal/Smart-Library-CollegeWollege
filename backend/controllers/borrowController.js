@@ -7,8 +7,8 @@ const MAX_BORROW_DAYS = 14;
 
 export const validateBorrow = async (req, res) => {
   try {
-    const { bookId, days } = req.body;
-    const userId = req.user.id;
+    const { bookId, days } = req.body;  //from frontend
+    const userId = req.user.id;      //from auth middleware
 
     if (!bookId || !days) {
       return res.status(400).json({ message: "Book ID and days are required" });
@@ -25,7 +25,7 @@ export const validateBorrow = async (req, res) => {
       userId,
       status: "ACTIVE",
     });
-
+    //one-book-at-a-time rule
     if (activeBorrow) {
       return res
         .status(400)
@@ -71,9 +71,9 @@ export const calculateBorrowCost = async (req, res) => {
 
     const daysInt = Number(days);
 
-  if (!Number.isInteger(daysInt)) {
-  return res.status(400).json({ message: "Days must be a number" });
-}
+//   if (!Number.isInteger(daysInt)) {
+//   return res.status(400).json({ message: "Days must be a number" });
+// }
 
     if (!bookId || !days) {
       return res.status(400).json({
@@ -88,7 +88,7 @@ export const calculateBorrowCost = async (req, res) => {
     }
 
     const book = await Book.findById(bookId);
-    console.log("BOOK FOUND:", book);
+    // console.log("BOOK FOUND:", book);
 
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
@@ -157,7 +157,7 @@ export const createBorrow = async (req, res) => {
 
 export const getActiveBorrow = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id;            //from auth middleware
 
     const activeBorrow = await getActiveBorrowService(userId);
 
@@ -181,7 +181,7 @@ export const getActiveBorrow = async (req, res) => {
 export const getBorrowSummary = async (req, res) => {
    try {
     const { borrowId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.id;             //from auth middleware
 
     const summary = await getBorrowSummaryService({
       userId,
@@ -203,7 +203,7 @@ export const submitBorrow = async (req, res) => {
   try {
     const { borrowId } = req.params;
     const { returnDate } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id;           //from auth middleware
 
     const result = await submitBorrowService({
       userId,

@@ -14,9 +14,9 @@ export const createBorrowService = async ({ userId, bookId, days }) => {
     throw new Error("Book ID and days are required");
   }
 
-  if (!Number.isInteger(daysInt)) {
-    throw new Error("Days must be a number");
-  }
+  // if (!Number.isInteger(daysInt)) {
+  //   throw new Error("Days must be a number");
+  // }
 
   if (daysInt <= 0 || daysInt > MAX_BORROW_DAYS) {
     throw new Error(`Days must be between 1 and ${MAX_BORROW_DAYS}`);
@@ -154,11 +154,11 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
   }
 
   const dueDate = new Date(borrow.dueDate);
-  const diffMs = actualReturnDate - dueDate;
+  const diffMs = actualReturnDate - dueDate;     //if returns before dueDate, diffMs negative
 
   const overdueDays = Math.max(
     0,
-    Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+    Math.ceil(diffMs / (1000 * 60 * 60 * 24)) //convert milliseconds to days
   );
 
   const totalOverdue = overdueDays * book.duePerDay;
@@ -180,7 +180,7 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
   book.isBorrowed = false;
   await book.save();
 
-  // 9️⃣ Update user balance
+  // Update user balance
   const user = await User.findById(userId);
   if (!user) {
   throw new Error("User not found");
