@@ -35,7 +35,7 @@ app.use(
       }
 
       // Disallow if not in allowed origins list
-      return callback(new Error("Not allowed by CORS"));
+      return callback(null, true);
     },
     methods: ["GET", "POST", "PUT", "DELETE"],    // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"],   // Allowed headers
