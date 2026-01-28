@@ -1,9 +1,20 @@
 async function loadBooks() {
-  const res = await apiFetch("/books");
-  const books = await res.json();
+  try {
+    const res = await apiFetch("/books");
+    if (!res.ok) {
+      const error = await res.json();
+      console.error("API ERROR:", error.message);
+      return;
+    }
 
-  const container = document.getElementById("books");
-  container.innerHTML = "";
+    const books = await res.json();
+    if (!Array.isArray(books)) {
+      console.error("Expected books array, got:", books);
+      return;
+    }
+
+    const container = document.getElementById("books");
+    container.innerHTML = "";
 
   books.forEach(book => {
     const div = document.createElement("div");
@@ -31,6 +42,9 @@ async function loadBooks() {
 
     container.appendChild(div);
   });
+} catch (error) {
+    console.error("Error loading books:", error);
+  }
 }
 
 loadBooks();

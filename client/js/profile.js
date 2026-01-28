@@ -11,6 +11,7 @@ async function loadProfile() {
       month: "short",
       year: "numeric"
     });
+  document.getElementById("profile-role").innerText = user.role;
 }
 
 loadProfile();

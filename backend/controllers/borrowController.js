@@ -7,53 +7,10 @@ const MAX_BORROW_DAYS = 14;
 
 export const validateBorrow = async (req, res) => {
   try {
-    const { bookId, days } = req.body;  //from frontend
-    const userId = req.user.id;      //from auth middleware
+     const { bookId, days } = req.body;
+    const userId = req.user.id;
 
-    if (!bookId || !days) {
-      return res.status(400).json({ message: "Book ID and days are required" });
-    }
-
-    if (!Number.isInteger(days) || days <= 0 || days > MAX_BORROW_DAYS) {
-  return res.status(400).json({
-    message: "Days must be an integer between 1 and 14",
-  });
-  }
-
-
-    const activeBorrow = await Borrow.findOne({
-      userId,
-      status: "ACTIVE",
-    });
-    //one-book-at-a-time rule
-    if (activeBorrow) {
-      return res
-        .status(400)
-        .json({ message: "User already has an active borrow" });
-    }
-
-    const pendingPayment = await Payment.findOne({
-      userId,
-      status: "PENDING",
-    });
-
-    if (pendingPayment) {
-      return res
-        .status(400)
-        .json({ message: "Clear pending payment before borrowing" });
-    }
-
-    const book = await Book.findById(bookId);
-
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
-    }
-
-    if (book.isBorrowed) {
-      return res
-        .status(400)
-        .json({ message: "Book is already borrowed" });
-    }
+    await createBorrowService({ userId, bookId, days });
 
     return res.status(200).json({
       message: "Borrow validation successful",

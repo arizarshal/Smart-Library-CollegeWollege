@@ -7,22 +7,14 @@ import User from "../models/user.js";
 
 const MAX_BORROW_DAYS = 14;
 
-export const createBorrowService = async ({ userId, bookId, days }) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    const daysInt = Number(days);
+const validateBorrowRules = async ({ userId, bookId, days, session }) => {
+  const daysInt = Number(days);
 
   if (!bookId || !days) {
     throw new Error("Book ID and days are required");
   }
 
-  // if (!Number.isInteger(daysInt)) {
-  //   throw new Error("Days must be a number");
-  // }
-
-  if (daysInt <= 0 || daysInt > MAX_BORROW_DAYS) {
+  if (!Number.isInteger(daysInt) || daysInt <= 0 || daysInt > MAX_BORROW_DAYS) {
     throw new Error(`Days must be between 1 and ${MAX_BORROW_DAYS}`);
   }
 
@@ -30,10 +22,11 @@ export const createBorrowService = async ({ userId, bookId, days }) => {
     throw new Error("Invalid book ID format");
   }
 
-  const activeBorrow = await Borrow.findOne({
-    userId,
-    status: "ACTIVE",
-  }, null, { session });
+  const activeBorrow = await Borrow.findOne(
+    { userId, status: "ACTIVE" },
+    null,
+    { session }
+  );
 
   if (activeBorrow) {
     throw new Error("User already has an active borrow");
@@ -48,40 +41,60 @@ export const createBorrowService = async ({ userId, bookId, days }) => {
     throw new Error("Book already borrowed");
   }
 
-  const borrowDate = new Date();
-  const dueDate = new Date();
-  dueDate.setDate(borrowDate.getDate() + daysInt);
-
-  const totalCost = book.singlePricePerDay * daysInt;
-
-  const borrow = await Borrow.create([{
-    userId,
-    bookId,
-    borrowDate,
-    dueDate,
-    totalCost,
-    status: "ACTIVE",
-  }], { session });
-
-  book.isBorrowed = true;
-  await book.save();
-
-  await session.commitTransaction();
-  session.endSession();
-
-  return {
-    borrow: borrow[0],
-    book,
-    borrowDate,
-    dueDate,
-    totalCost,
-  };
-} catch (error) {
-  await session.abortTransaction();
-  session.endSession();
-  throw error;
-} 
+  return { book, daysInt };
 };
+
+
+export const createBorrowService = async ({ userId, bookId, days }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { book, daysInt } = await validateBorrowRules({
+      userId,
+      bookId,
+      days,
+      session,
+    });
+
+    const borrowDate = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(borrowDate.getDate() + daysInt);
+
+    const totalCost = book.singlePricePerDay * daysInt;
+
+    const borrow = await Borrow.create(
+      [{
+        userId,
+        bookId,
+        borrowDate,
+        dueDate,
+        totalCost,
+        status: "ACTIVE",
+      }],
+      { session }
+    );
+
+    book.isBorrowed = true;
+    await book.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      borrow: borrow[0],
+      book,
+      borrowDate,
+      dueDate,
+      totalCost,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
 
 
 
@@ -134,29 +147,16 @@ export const getBorrowSummaryService = async ({ userId, borrowId }) => {
   };
 };
 
-
-
-
-export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
+const validateReturnRules = async ({ userId, borrowId, session }) => {
   if (!mongoose.Types.ObjectId.isValid(borrowId)) {
     throw new Error("Invalid borrow ID");
   }
 
-  if (!returnDate) {
-    throw new Error("Return date is required");
-  }
-
-  try {
-    const actualReturnDate = new Date(returnDate);
-
-  const borrow = await Borrow.findOne({
-    _id: borrowId,
-    userId,
-    status: "ACTIVE",
-  }).session(session);
+  const borrow = await Borrow.findOne(
+    { _id: borrowId, userId, status: "ACTIVE" },
+    null,
+    { session }
+  );
 
   if (!borrow) {
     const err = new Error("Active borrow not found");
@@ -169,57 +169,125 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
     throw new Error("Book not found");
   }
 
-  const dueDate = new Date(borrow.dueDate);
-  const diffMs = actualReturnDate - dueDate;     //if returns before dueDate, diffMs negative
+  return { borrow, book };
+};
 
+
+const calculateFinalCost = ({ borrow, book, returnDate }) => {
+  const borrowDate = new Date(borrow.borrowDate);
+  const actualReturnDate = new Date(returnDate);
+
+  if (actualReturnDate < borrowDate) {
+    throw new Error("Return date cannot be before borrow date");
+  }
+
+  // Days used (minimum 1)
+  const usedDays = Math.max(
+    1,
+    Math.ceil(
+      (actualReturnDate - borrowDate) / (1000 * 60 * 60 * 24)
+    )
+  );
+
+  const actualCost = usedDays * book.singlePricePerDay;
+
+  const dueDate = new Date(borrow.dueDate);
   const overdueDays = Math.max(
     0,
-    Math.ceil(diffMs / (1000 * 60 * 60 * 24)) //convert milliseconds to days
+    Math.ceil(
+      (actualReturnDate - dueDate) / (1000 * 60 * 60 * 24)
+    )
   );
 
   const totalOverdue = overdueDays * book.duePerDay;
 
-  borrow.returnDate = actualReturnDate;
-  borrow.totalOverdue = totalOverdue;
-  borrow.status = "RETURNED";
-  await borrow.save();
-
-  const totalAmount = borrow.totalCost + totalOverdue;
-
-  const payment = await Payment.create([{
-    userId,
-    borrowId: borrow._id,
-    amount: totalAmount,
-    status: "PENDING",
-  }], { session });
-
-  book.isBorrowed = false;
-  await book.save({session});
-
-  // Update user balance
-  const user = await User.findById(userId).session(session);
-  if (!user) {
-  throw new Error("User not found");
-}
-  user.balance += totalAmount;
-  await user.save({ session });
-
-  await session.commitTransaction();
-  session.endSession();
-
   return {
-    borrow,
+    usedDays,
+    actualCost,
     overdueDays,
     totalOverdue,
-    totalAmount,
-    paymentStatus: payment[0].status,
+    totalAmount: actualCost + totalOverdue,
   };
-} catch (error) {
-  await session.abortTransaction();
-  session.endSession();
-  throw error;
-}
-}
+};
+
+
+
+export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
+  if (!returnDate) {
+    throw new Error("Return date is required");
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { borrow, book } = await validateReturnRules({
+      userId,
+      borrowId,
+      session,
+    });
+
+    const {
+      usedDays,
+      actualCost,
+      overdueDays,
+      totalOverdue,
+      totalAmount,
+    } = calculateFinalCost({
+      borrow,
+      book,
+      returnDate,
+    });
+
+    // Update borrow
+    borrow.returnDate = new Date(returnDate);
+    borrow.totalCost = actualCost;       // 🔥 FIXED
+    borrow.totalOverdue = totalOverdue;
+    borrow.status = "RETURNED";
+    await borrow.save({ session });
+
+    // Create payment
+    const payment = await Payment.create(
+      [{
+        userId,
+        borrowId: borrow._id,
+        amount: totalAmount,
+        status: "PENDING",
+      }],
+      { session }
+    );
+
+    // Update book availability
+    book.isBorrowed = false;
+    await book.save({ session });
+
+    // Update user balance
+    const user = await User.findById(userId).session(session);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    user.balance += totalAmount;
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      borrow,
+      usedDays,
+      overdueDays,
+      totalOverdue,
+      totalAmount,
+      paymentStatus: payment[0].status,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
 
 
 export const getBorrowHistoryService = async (userId) => {

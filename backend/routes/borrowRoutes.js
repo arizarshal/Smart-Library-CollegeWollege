@@ -1,5 +1,6 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
+import authorizeRoles from "../middleware/authorizeRoles.js";
 import { validateBorrow, 
   calculateBorrowCost, 
   createBorrow, 
@@ -12,15 +13,16 @@ import { validateBorrow,
 
 const router = express.Router();
 
+router.use(authMiddleware, authorizeRoles('USER', 'ADMIN'));
 
-router.post("/validate", authMiddleware, validateBorrow);
-router.post("/calculate", authMiddleware, calculateBorrowCost)
-router.post("/", authMiddleware, createBorrow);
+router.post("/validate", validateBorrow);
+router.post("/calculate", calculateBorrowCost)
+router.post("/", createBorrow);
 
-router.get("/active", authMiddleware, getActiveBorrow);
-router.get("/history", authMiddleware, getBorrowHistory);
-router.get("/:borrowId/summary", authMiddleware, getBorrowSummary);
-router.post("/:borrowId/submit", authMiddleware, submitBorrow);
+router.get("/active", getActiveBorrow);
+router.get("/history", getBorrowHistory);
+router.get("/:borrowId/summary", getBorrowSummary);
+router.post("/:borrowId/submit", submitBorrow);
 
 
 

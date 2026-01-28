@@ -42,7 +42,7 @@ export const registerService = async ({ name, email, password }) => {
   });
 
   const token = jwt.sign(
-    { id: newUser._id },
+    { id: newUser._id, role: newUser.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -79,7 +79,7 @@ export const loginService = async ({ email, password }) => {
   }
 
   const token = jwt.sign(
-    { id: user._id },
+    { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -88,5 +88,6 @@ export const loginService = async ({ email, password }) => {
     userId: user._id,
     name: user.name,
     token,
+    role: user.role,
   };
 };

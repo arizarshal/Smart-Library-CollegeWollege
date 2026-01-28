@@ -33,6 +33,11 @@ const userSchema = new Schema({
     default: 0,
     min: [0, "Balance cannot be negative"],
   },
+  role: {
+    type: String,
+    enum: ["USER", "ADMIN", "LIBRARIAN"],
+    default: "USER",
+  }
 }, { timestamps: true });
 
 
