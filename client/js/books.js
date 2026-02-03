@@ -2,10 +2,12 @@ function getSelectedBookId() {
   const params = new URLSearchParams(window.location.search);
   return params.get("bookId");
 }
-
 async function loadBooks() {
-  const res = await apiFetch("/books");
-  const books = await res.json();
+  const sort = "createdAt-desc"; 
+  const res = await apiFetch(`/books?page=1&limit=50&sort=${encodeURIComponent(sort)}`);
+  const payload = await res.json();
+
+  const books = Array.isArray(payload) ? payload : payload.data;
 
   const selectedBookId = getSelectedBookId();
   const container = document.getElementById("books");

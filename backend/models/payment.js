@@ -28,6 +28,8 @@ const paymentSchema = new Schema({
   }
 }, { timestamps: true });
 
+paymentSchema.index({ userId: 1, status: 1 });
+
 const Payment = model('Payment', paymentSchema);
 
 export default Payment;

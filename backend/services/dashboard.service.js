@@ -1,33 +1,35 @@
-import Borrow from "../models/borrow.js";
-import Payment from "../models/payment.js";
-import User from "../models/user.js";
+// Using dashboard.aggregate.service.js for optimized aggregation query insted of dashboard.service.js which was using multiple queries. 
 
-export const getDashboardSummaryService = async (userId) => {
-  const activeBorrows = await Borrow.countDocuments({
-    userId,
-    status: "ACTIVE",
-  });
+// import Borrow from "../models/borrow.js";
+// import Payment from "../models/payment.js";
+// import User from "../models/user.js";
 
-  const historyCount = await Borrow.countDocuments({
-    userId,
-  });
+// export const getDashboardSummaryService = async (userId) => {
+//   const activeBorrows = await Borrow.countDocuments({
+//     userId,
+//     status: "ACTIVE",
+//   });
 
-  const pendingPayments = await Payment.find({
-    userId,
-    status: "PENDING",
-  });
+//   const historyCount = await Borrow.countDocuments({
+//     userId,
+//   });
 
-  const totalDue = pendingPayments.reduce(
-    (sum, payment) => sum + payment.amount,
-    0
-  );
+//   const pendingPayments = await Payment.find({
+//     userId,
+//     status: "PENDING",
+//   });
 
-  const user = await User.findById(userId);
+//   const totalDue = pendingPayments.reduce(
+//     (sum, payment) => sum + payment.amount,
+//     0
+//   );
 
-  return {
-    activeBorrows,
-    totalDue,
-    balance: user.balance,
-    historyCount,
-  };
-};
+//   const user = await User.findById(userId);
+
+//   return {
+//     activeBorrows,
+//     totalDue,
+//     balance: user.balance,
+//     historyCount,
+//   };
+// };

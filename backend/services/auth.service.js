@@ -2,17 +2,17 @@ import validator from "validator";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/user.js";
+import AppError from "../utils/AppError.js";
+
 
 export const registerService = async ({ name, email, password }) => {
   if (!name || !email || !password) {
-    throw new Error("All fields required");
+    throw new AppError("All fields required", 400);
   }
 
   if (!validator.isEmail(email)) {
-  const err = new Error("Invalid email address");
-  err.statusCode = 400;
-  throw err;
-}
+    throw new AppError("Invalid email address", 400);
+  }
 
 // if (!validator.isStrongPassword(password, {
 //   minLength: 8,
@@ -30,9 +30,7 @@ export const registerService = async ({ name, email, password }) => {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    const err = new Error("User already exists");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("User already exists", 400);
   }
 
   const newUser = await User.create({
@@ -59,23 +57,20 @@ export const registerService = async ({ name, email, password }) => {
 
 export const loginService = async ({ email, password }) => {
   if (!email || !password) {
-    const err = new Error("All fields required");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("All fields required", 400);
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    const err = new Error("Invalid credentials");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("Invalid credentials", 400);
+  }
+  if (!user.password) {
+    throw new AppError("Invalid credentials", 400);
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    const err = new Error("Invalid credentials");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("Invalid credentials", 400);
   }
 
   const token = jwt.sign(

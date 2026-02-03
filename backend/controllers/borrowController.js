@@ -1,69 +1,50 @@
 import Borrow from "../models/borrow.js";
 import Book from "../models/book.js";
 import Payment from "../models/payment.js";
-import { createBorrowService, getBorrowSummaryService, submitBorrowService, getActiveBorrowService, getBorrowHistoryService } from "../services/borrow.service.js";
+import AppError, { catchAsync } from "../utils/AppError.js";
+import { validateBorrowRules, createBorrowService, getBorrowSummaryService, submitBorrowService, getActiveBorrowService, getBorrowHistoryService } from "../services/borrow.service.js";
 
 const MAX_BORROW_DAYS = 14;
 
-export const validateBorrow = async (req, res) => {
-  try {
-     const { bookId, days } = req.body;
-    const userId = req.user.id;
+export const validateBorrow = catchAsync(async (req, res) => {
+  const { bookId, days } = req.body;
+  const userId = req.user.id;
 
-    await createBorrowService({ userId, bookId, days });
+  await validateBorrowRules({ userId, bookId, days });
+
 
     return res.status(200).json({
       message: "Borrow validation successful",
       allowed: true,
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+});
 
-
-export const calculateBorrowCost = async (req, res) => {
-  try {
+export const calculateBorrowCost = catchAsync(async (req, res) => {
     const { bookId, days } = req.body;
-
-    const daysInt = Number(days);
-
-//   if (!Number.isInteger(daysInt)) {
-//   return res.status(400).json({ message: "Days must be a number" });
-// }
-
+  
+    
     if (!bookId || !days) {
-      return res.status(400).json({
-        message: "Book ID and days are required",
-      });
+      throw new AppError("Book ID and days are required", 400);
     }
-
-    if (days <= 0 || days > MAX_BORROW_DAYS) {
-      return res.status(400).json({
-        message: `Days must be between 1 and ${MAX_BORROW_DAYS}`,
-      });
+    
+    const daysInt = Number(days);
+    if (!Number.isInteger(daysInt) || daysInt > MAX_BORROW_DAYS) {
+      throw new AppError(`Days must be an integer between 1 and ${MAX_BORROW_DAYS}`, 400);
     }
 
     const book = await Book.findById(bookId);
     // console.log("BOOK FOUND:", book);
-
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
-    }
+    if (!book) throw new AppError("Book not found", 404);
 
     if (book.isBorrowed) {
-      return res.status(400).json({
-        message: "Book is already borrowed",
-      });
+      throw new AppError("Book is already borrowed", 400);
     }
 
     if (typeof book.singlePricePerDay !== "number") {
-  return res.status(500).json({
-    message: "Book pricing misconfigured",
-  });
-}
+      throw new AppError("Book pricing misconfigured", 500)
+    }
 
-    const totalCost = days * book.singlePricePerDay;
+    const totalCost = daysInt * book.singlePricePerDay;
 
     return res.status(200).json({
       bookId: book._id,
@@ -72,17 +53,10 @@ export const calculateBorrowCost = async (req, res) => {
       days,
       totalCost,
     });
-  } catch (error) {
-  return res.status(500).json({
-    message: error.message,
   });
-}
-};
 
 
-
-export const createBorrow = async (req, res) => {
-   try {
+export const createBorrow = catchAsync(async (req, res) => {
     const { bookId, days } = req.body;
     const userId = req.user.id;
 
@@ -104,16 +78,10 @@ export const createBorrow = async (req, res) => {
       totalCost: result.totalCost,
       status: result.borrow.status,
     });
-  } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-    });
-  }
-};
+});
 
 
-export const getActiveBorrow = async (req, res) => {
-  try {
+export const getActiveBorrow = catchAsync(async (req, res) => {
     const userId = req.user.id;            //from auth middleware
 
     const activeBorrow = await getActiveBorrowService(userId);
@@ -126,17 +94,10 @@ export const getActiveBorrow = async (req, res) => {
     }
 
     return res.status(200).json(activeBorrow);
-  } catch (error) {
-    console.error("GET ACTIVE BORROW ERROR:", error.message);
-    return res.status(500).json({
-      message: error.message,
-    });
-  }
-};
+});
 
 
-export const getBorrowSummary = async (req, res) => {
-   try {
+export const getBorrowSummary = catchAsync(async (req, res) => {
     const { borrowId } = req.params;
     const userId = req.user.id;             //from auth middleware
 
@@ -146,18 +107,10 @@ export const getBorrowSummary = async (req, res) => {
     });
 
     return res.status(200).json(summary);
-  } catch (error) {
-    return res.status(error.statusCode || 400).json({
-      message: error.message,
-    });
-  }
-};
+});
 
 
-
-
-export const submitBorrow = async (req, res) => {
-  try {
+export const submitBorrow = catchAsync(async (req, res) => {
     const { borrowId } = req.params;
     const { returnDate } = req.body;
     const userId = req.user.id;           //from auth middleware
@@ -178,25 +131,15 @@ export const submitBorrow = async (req, res) => {
       totalAmount: result.totalAmount,
       paymentStatus: result.paymentStatus,
     });
-  } catch (error) {
-    return res.status(error.statusCode || 400).json({
-      message: error.message,
-    });
-  }
-};
+});
 
 
 
-export const getBorrowHistory = async (req, res) => {
-  try {
+export const getBorrowHistory = catchAsync(async (req, res) => {
     const userId = req.user.id;
 
     const historyData = await getBorrowHistoryService(userId);
 
     return res.status(200).json(historyData);
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
-  }
-};
+
+});

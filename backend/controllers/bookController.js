@@ -1,35 +1,26 @@
 import mongoose from "mongoose";
 import Book from "../models/book.js";
+import { getAllBooksService } from "../services/book.service.js";
+import AppError, { catchAsync } from "../utils/AppError.js";
 
+export const getAllBooks = catchAsync(async (req, res) => {
+  const result = await getAllBooksService(req.query);
+  return res.status(200).json(result);
+});
 
-export const getAllBooks = async (req, res) => {
-  try {
-    const books = await Book.find({ isBorrowed: false });
-    res.status(200).json(books);
-  } catch (error) {
-    console.error("GET BOOKS ERROR:", error);
-    res.status(500).json({ message: error.message || "Server error" });
+export const getBookById = catchAsync(async (req, res) => {
+  const { bookId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(bookId)) {
+    // Throw -> captured by catchAsync -> handled by global handler
+    throw new AppError("Invalid book ID format", 400 );
   }
-};
 
+  const book = await Book.findById(bookId);
 
-export const getBookById = async (req, res) => {
-  try {
-    const { bookId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(bookId)) {
-      return res.status(400).json({ message: "Invalid book ID format" });
-    }
-
-    const book = await Book.findById(bookId);
-
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
-    }
-
-    res.status(200).json(book);
-  } catch (error) {
-    console.error("GET BOOK ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+  if (!book) {
+    throw new AppError("Book not found", 404);
   }
-};
+
+  return res.status(200).json(book);
+});

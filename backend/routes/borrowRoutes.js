@@ -9,6 +9,7 @@ import { validateBorrow,
   submitBorrow, 
   getBorrowHistory
 } from "../controllers/borrowController.js";
+import getMostBorrowedBooksByTitle from "../controllers/borrowAnalyticsController.js";
 
 
 const router = express.Router();
@@ -24,6 +25,6 @@ router.get("/history", getBorrowHistory);
 router.get("/:borrowId/summary", getBorrowSummary);
 router.post("/:borrowId/submit", submitBorrow);
 
-
+router.get("/mostborrowed", getMostBorrowedBooksByTitle);
 
 export default router;

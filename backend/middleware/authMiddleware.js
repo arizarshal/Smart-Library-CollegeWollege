@@ -4,14 +4,14 @@ const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return next(new AppError(":Unauthorized", 401))
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("DECODED TOEKEN:", decoded);
+    // console.log("DECODED TOEKEN:", decoded);
 
     req.user = { 
       id: decoded.id, 
@@ -20,7 +20,7 @@ const authMiddleware = (req, res, next) => {
 
     return next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
+    return next(new AppError("Invalid token", 400))
   }
 };
 

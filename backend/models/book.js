@@ -46,6 +46,20 @@ const bookSchema = new Schema({
   },
 }, { timestamps: true });
 
+// For available books, newest first
+bookSchema.index({ isBorrowed: 1, createdAt: -1 });
+
+// Good for sorting title/author while filtering availability
+bookSchema.index({ isBorrowed: 1, title: 1 });
+bookSchema.index({ isBorrowed: 1, author: 1 });
+
+// Text search index for title and author
+bookSchema.index({ title: "text", author: "text" });
+
+// Price sort within availability filter
+bookSchema.index({ isBorrowed: 1, singlePricePerDay: 1 });
+
+
 const Book = model('Book', bookSchema);
 
 export default Book;

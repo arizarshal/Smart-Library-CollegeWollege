@@ -3,23 +3,24 @@ import Borrow from "../models/borrow.js";
 import Book from "../models/book.js";
 import Payment from "../models/payment.js"; 
 import User from "../models/user.js";
+import AppError from "../utils/AppError.js";    
 
 
 const MAX_BORROW_DAYS = 14;
 
-const validateBorrowRules = async ({ userId, bookId, days, session }) => {
+export const validateBorrowRules = async ({ userId, bookId, days, session }) => {
   const daysInt = Number(days);
 
   if (!bookId || !days) {
-    throw new Error("Book ID and days are required");
+    throw new AppError("Book ID and days are required", 400);
   }
 
   if (!Number.isInteger(daysInt) || daysInt <= 0 || daysInt > MAX_BORROW_DAYS) {
-    throw new Error(`Days must be between 1 and ${MAX_BORROW_DAYS}`);
+    throw new AppError(`Days must be between 1 and ${MAX_BORROW_DAYS}`, 400);
   }
 
   if (!mongoose.Types.ObjectId.isValid(bookId)) {
-    throw new Error("Invalid book ID format");
+    throw new AppError("Invalid book ID format", 400);
   }
 
   const activeBorrow = await Borrow.findOne(
@@ -29,16 +30,16 @@ const validateBorrowRules = async ({ userId, bookId, days, session }) => {
   );
 
   if (activeBorrow) {
-    throw new Error("User already has an active borrow");
+    throw new AppError("User already has an active borrow", 400);
   }
 
   const book = await Book.findById(bookId).session(session);
   if (!book) {
-    throw new Error("Book not found");
+    throw new AppError("Book not found", 404);
   }
 
   if (book.isBorrowed) {
-    throw new Error("Book already borrowed");
+    throw new AppError("Book already borrowed", 400);
   }
 
   return { book, daysInt };
@@ -95,9 +96,6 @@ export const createBorrowService = async ({ userId, bookId, days }) => {
   }
 };
 
-
-
-
 export const getActiveBorrowService = async (userId) => {
   const borrow = await Borrow.findOne({
     userId,
@@ -121,7 +119,7 @@ export const getActiveBorrowService = async (userId) => {
 
 export const getBorrowSummaryService = async ({ userId, borrowId }) => {
   if (!mongoose.Types.ObjectId.isValid(borrowId)) {
-    throw new Error("Invalid borrow ID");
+    throw new AppError("Invalid borrow ID", 400);
   }
 
   const borrow = await Borrow.findOne({
@@ -130,9 +128,7 @@ export const getBorrowSummaryService = async ({ userId, borrowId }) => {
   }).populate("bookId", "title author singlePricePerDay duePerDay image");
 
   if (!borrow) {
-    const err = new Error("Borrow not found");
-    err.statusCode = 404;
-    throw err;
+    throw new AppError("Borrow not found", 404);
   }
 
   return {
@@ -147,9 +143,10 @@ export const getBorrowSummaryService = async ({ userId, borrowId }) => {
   };
 };
 
+
 const validateReturnRules = async ({ userId, borrowId, session }) => {
   if (!mongoose.Types.ObjectId.isValid(borrowId)) {
-    throw new Error("Invalid borrow ID");
+    throw new AppError("Invalid borrow ID", 400);
   }
 
   const borrow = await Borrow.findOne(
@@ -159,14 +156,12 @@ const validateReturnRules = async ({ userId, borrowId, session }) => {
   );
 
   if (!borrow) {
-    const err = new Error("Active borrow not found");
-    err.statusCode = 404;
-    throw err;
+    throw new AppError("Active borrow not found", 404);
   }
 
   const book = await Book.findById(borrow.bookId).session(session);
   if (!book) {
-    throw new Error("Book not found");
+    throw new AppError("Book not found", 404);
   }
 
   return { borrow, book };
@@ -178,7 +173,7 @@ const calculateFinalCost = ({ borrow, book, returnDate }) => {
   const actualReturnDate = new Date(returnDate);
 
   if (actualReturnDate < borrowDate) {
-    throw new Error("Return date cannot be before borrow date");
+    throw new AppError("Return date cannot be before borrow date", 400);
   }
 
   // Days used (minimum 1)
@@ -211,10 +206,9 @@ const calculateFinalCost = ({ borrow, book, returnDate }) => {
 };
 
 
-
 export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
   if (!returnDate) {
-    throw new Error("Return date is required");
+    throw new AppError("Return date is required", 400);
   }
 
   const session = await mongoose.startSession();
@@ -241,7 +235,7 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
 
     // Update borrow
     borrow.returnDate = new Date(returnDate);
-    borrow.totalCost = actualCost;       // 🔥 FIXED
+    borrow.totalCost = actualCost;       
     borrow.totalOverdue = totalOverdue;
     borrow.status = "RETURNED";
     await borrow.save({ session });
@@ -264,7 +258,7 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
     // Update user balance
     const user = await User.findById(userId).session(session);
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError("User not found", 404);
     }
 
     user.balance += totalAmount;

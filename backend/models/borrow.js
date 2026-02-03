@@ -57,6 +57,8 @@ const borrowSchema = new Schema({
   }
 }, { timestamps: true });
 
+borrowSchema.index({ userId: 1, status: 1 });
+
 const Borrow = model('Borrow', borrowSchema);
 
 export default Borrow;

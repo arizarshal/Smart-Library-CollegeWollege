@@ -11,34 +11,37 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import Book from "./models/book.js";
 import booksData from "./data/books.js";
+import errorHandler from "./middleware/errorHandler.js";
+import AppError from "./utils/AppError.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 
 const app = express();
-'/Users/ariz/Desktop/JS projects/smart library mysql'
-// CORS configuration: allowed origins
-const allowedOrigins = [
-  "http://localhost:5500",
-  "http://127.0.0.1:5500",
-  process.env.CLIENT_URL,
-];
 
-// CORS middleware
+// allow all in dev
 app.use(
   cors({
     origin: (requestOrigin, callback) => {
-      // Allow Postman / server-to-server
+      // Allowing non-browser clients (Postman, curl)
       if (!requestOrigin) return callback(null, true);
 
-      // Allow if in allowed origins list
-      if (allowedOrigins.includes(requestOrigin)) {
+      // Allow all during development
+      if (process.env.NODE_ENV !== "production") {
         return callback(null, true);
       }
 
-      // Disallow if not in allowed origins list
+      // Restrict in production (edit allowed list as needed)
+      const allowedOrigins = new Set([
+        "http://127.0.0.1:5501",
+        "http://localhost:5501",
+      ]);
+
+      if (allowedOrigins.has(requestOrigin)) return callback(null, true);
+
       return callback(new Error("Not allowed by CORS"));
     },
-    methods: ["GET", "POST", "PUT", "DELETE"],    // Allowed HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"],   // Allowed headers
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 
@@ -56,15 +59,15 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-app.use("/api", apiLimiter);  // Apply general API rate limiter
-app.use("/auth", authRoutes);
+// app.use("/api", apiLimiter);  
+app.use("/auth", authRoutes);  
 app.use("/books", bookRoutes);
 app.use("/borrow", borrowRoutes);
 app.use("/payments", paymentRoutes);
 app.use("/dashboard", dashboardRoutes);
 
-var insertBooksIfEmpty;
 
+var insertBooksIfEmpty;
 
 insertBooksIfEmpty = async () => {
   const count = await Book.countDocuments();
@@ -74,18 +77,15 @@ insertBooksIfEmpty = async () => {
     console.log("number of books: ", await Book.countDocuments());
     console.log("📚 Books inserted into database");
 };
-
-
 // insertBooksIfEmpty()
 
+// Catch-all for unknown routes (regex works across Express versions)  
+app.all(/.*/, (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+});
 
 // Global error handler
-app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR:", err.message);
-  res.status(err.statusCode || 500).json({
-    message: err.message || "Internal Server Error",
-  });
-});
+app.use(errorHandler);
 
 
 export default app; 
