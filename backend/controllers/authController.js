@@ -7,17 +7,8 @@ const log = createControllerLogger("authController");
 
 export const register = catchAsync(async (req, res) => {
   log.info(req, "register called", { email: req.body.email });
-  console.log(req.body);
   
-  // const { name, email, password } = req.body;
-
-  // const result = await registerService({
-  //   name,
-  //   email,
-  //   password,
-  // }); 
   const result = await registerService(req.body);
-  console.log(result);
 
   log.debug(req, "register success", { userId: result.userId})
   

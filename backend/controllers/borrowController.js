@@ -38,8 +38,6 @@ export const calculateBorrowCost = catchAsync(async (req, res) => {
 
     const book = await Book.findById(bookId);
 
-
-    // console.log("BOOK FOUND:", book);
     if (!book) throw new AppError("Book not found", 404);
 
     if (book.isBorrowed) {
@@ -172,7 +170,7 @@ export const getBorrowHistory = catchAsync(async (req, res) => {
 
     const historyData = await getBorrowHistoryService(userId);
 
-    log.debug(req, "getBorrowHistory success", { count: historyData.length });
+    log.debug(req, "getBorrowHistory success", { count: historyData.count });
   
     return res.status(200).json(historyData);
 

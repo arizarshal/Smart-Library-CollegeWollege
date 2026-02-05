@@ -1,7 +1,6 @@
 async function loadBooks() {
   try {
-    const sort = "title_asc"; 
-    const res = await apiFetch(`/books?page=1&limit=20&sort=${encodeURIComponent(sort)}`);
+    const res = await apiFetch(`/books?page=1&limit=20&sort=title_aesc`);
 
     if (!res.ok) {
       const error = await res.json();

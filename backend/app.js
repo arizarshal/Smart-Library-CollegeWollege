@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors"
 import helmet from "helmet";
 import morgan from "morgan";
-import {logger} from "./utils/logScript.js";
+// import {logger} from "./utils/logScript.js";
 
 // Importing routes and middleware
 import authRoutes from "./routes/authRoutes.js";

@@ -211,6 +211,10 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
     throw new AppError("Return date is required", 400);
   }
 
+  if (!mongoose.Types.ObjectId.isValid(borrowId)) {
+    throw new AppError("Invalid borrow ID format", 400);
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -277,9 +281,10 @@ export const submitBorrowService = async ({ userId, borrowId, returnDate }) => {
     };
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
     throw error;
-  }
+    } finally {
+      session.endSession();
+    }
 };
 
 

@@ -31,6 +31,7 @@ const safeHeaders = (req) => ({
   "x-forwarded-for": req.get("x-forwarded-for"),
 });
 
+// req metadata
 const buildContext = (req) => ({
   method: req.method,
   path: req.originalUrl,
