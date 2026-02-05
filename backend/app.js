@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors"
-import helmet, { contentSecurityPolicy } from "helmet";
+import helmet from "helmet";
 import morgan from "morgan";
+import {logger} from "./utils/logScript.js";
 
 // Importing routes and middleware
 import authRoutes from "./routes/authRoutes.js";
@@ -16,6 +17,7 @@ import AppError from "./utils/AppError.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 
 const app = express();
+app.set('trust proxy', 1)
 
 // allow all in dev
 app.use(
@@ -29,10 +31,11 @@ app.use(
         return callback(null, true);
       }
 
-      // Restrict in production (edit allowed list as needed)
       const allowedOrigins = new Set([
         "http://127.0.0.1:5501",
         "http://localhost:5501",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
       ]);
 
       if (allowedOrigins.has(requestOrigin)) return callback(null, true);
@@ -45,11 +48,18 @@ app.use(
   })
 );
 
-// Middleware
 app.use(express.json());
 app.use(helmet({crossOriginResourcePolicy: false}));
 
-// Logger middleware (only in development)
+//  Logger middleware : For custom log in prod
+// app.use(morgan("combined", {
+//   skip: (req, res) => res.statusCode >= 400,
+//   stream: {
+//     write: (message) => logger.log(message.trim())
+//   }
+// }))
+
+// For dev
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }

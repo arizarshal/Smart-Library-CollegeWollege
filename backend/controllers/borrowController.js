@@ -3,15 +3,18 @@ import Book from "../models/book.js";
 import Payment from "../models/payment.js";
 import AppError, { catchAsync } from "../utils/AppError.js";
 import { validateBorrowRules, createBorrowService, getBorrowSummaryService, submitBorrowService, getActiveBorrowService, getBorrowHistoryService } from "../services/borrow.service.js";
+import { createControllerLogger } from "../utils/controllerLogger.js";
 
 const MAX_BORROW_DAYS = 14;
+const log = createControllerLogger("borrowController")
 
 export const validateBorrow = catchAsync(async (req, res) => {
   const { bookId, days } = req.body;
   const userId = req.user.id;
 
-  await validateBorrowRules({ userId, bookId, days });
+  log.info(req, "validateBorrow called", {bookId})
 
+  await validateBorrowRules({ userId, bookId, days });
 
     return res.status(200).json({
       message: "Borrow validation successful",
@@ -22,6 +25,7 @@ export const validateBorrow = catchAsync(async (req, res) => {
 export const calculateBorrowCost = catchAsync(async (req, res) => {
     const { bookId, days } = req.body;
   
+    log.info(req, "calculateBorrowCost called", { bookId, days})
     
     if (!bookId || !days) {
       throw new AppError("Book ID and days are required", 400);
@@ -33,6 +37,8 @@ export const calculateBorrowCost = catchAsync(async (req, res) => {
     }
 
     const book = await Book.findById(bookId);
+
+
     // console.log("BOOK FOUND:", book);
     if (!book) throw new AppError("Book not found", 404);
 
@@ -58,6 +64,8 @@ export const calculateBorrowCost = catchAsync(async (req, res) => {
 
 export const createBorrow = catchAsync(async (req, res) => {
     const { bookId, days } = req.body;
+    log.info(req, "createBorrow called", { bookId, days });
+
     const userId = req.user.id;
 
     const result = await createBorrowService({
@@ -65,6 +73,8 @@ export const createBorrow = catchAsync(async (req, res) => {
       bookId,
       days,
     });
+
+    log.info(req, "createBorrow success", { bookId, days });
 
     return res.status(201).json({
       message: "Book borrowed successfully",
@@ -83,8 +93,14 @@ export const createBorrow = catchAsync(async (req, res) => {
 
 export const getActiveBorrow = catchAsync(async (req, res) => {
     const userId = req.user.id;            //from auth middleware
+    log.info(req, "getActiveBorrow called")
 
     const activeBorrow = await getActiveBorrowService(userId);
+
+    log.debug(req, "getActiveBorrow success", { 
+    hasBorrow: !!activeBorrow,
+    borrowId: activeBorrow?._id 
+  });
 
     if (!activeBorrow) {
       return res.status(200).json({
@@ -100,11 +116,17 @@ export const getActiveBorrow = catchAsync(async (req, res) => {
 export const getBorrowSummary = catchAsync(async (req, res) => {
     const { borrowId } = req.params;
     const userId = req.user.id;             //from auth middleware
+    log.info(req, "getBorrowSummary called")
 
     const summary = await getBorrowSummaryService({
       userId,
       borrowId,
     });
+
+    log.debug(req, "getBorrowSummary success", { 
+    total: summary.total,
+    active: summary.active 
+  });
 
     return res.status(200).json(summary);
 });
@@ -115,11 +137,20 @@ export const submitBorrow = catchAsync(async (req, res) => {
     const { returnDate } = req.body;
     const userId = req.user.id;           //from auth middleware
 
+    log.info(req, "submitBorrow called", { borrowId, returnDate });
+  
+
     const result = await submitBorrowService({
       userId,
       borrowId,
       returnDate,
     });
+
+    log.debug(req, "submitBorrow success", { 
+    borrowId,
+    payment: result.payment._id,
+    overdueDays: result.overdueDays 
+  });
 
     return res.status(200).json({
       message: "Book returned successfully",
@@ -137,9 +168,12 @@ export const submitBorrow = catchAsync(async (req, res) => {
 
 export const getBorrowHistory = catchAsync(async (req, res) => {
     const userId = req.user.id;
+    log.info(req, "getBorrowHistory called");
 
     const historyData = await getBorrowHistoryService(userId);
 
+    log.debug(req, "getBorrowHistory success", { count: historyData.length });
+  
     return res.status(200).json(historyData);
 
 });

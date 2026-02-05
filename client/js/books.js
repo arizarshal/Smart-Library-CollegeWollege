@@ -2,12 +2,15 @@ function getSelectedBookId() {
   const params = new URLSearchParams(window.location.search);
   return params.get("bookId");
 }
+
 async function loadBooks() {
   const sort = "createdAt-desc"; 
-  const res = await apiFetch(`/books?page=1&limit=50&sort=${encodeURIComponent(sort)}`);
+  // const res = await apiFetch(`/books?page=1&limit=50&sort=${encodeURIComponent(sort)}`);
+  const res = await apiFetch(`/books?page=1&limit=20&sort=title_aesc`);
   const payload = await res.json();
 
   const books = Array.isArray(payload) ? payload : payload.data;
+  console.log(books);
 
   const selectedBookId = getSelectedBookId();
   const container = document.getElementById("books");
@@ -33,6 +36,7 @@ async function loadBooks() {
 
     container.appendChild(div);
   });
+  return books
 }
 
 async function borrowBook(bookId) {

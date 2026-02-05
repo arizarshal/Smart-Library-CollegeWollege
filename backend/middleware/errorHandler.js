@@ -1,4 +1,5 @@
 import AppError from "../utils/AppError.js";
+import { createControllerLogger } from "../utils/controllerLogger.js";
 
 const errorHandler = (err, req, res, next) => {
    let error = err
@@ -25,6 +26,18 @@ const errorHandler = (err, req, res, next) => {
         const fields = Object.keys(error.keyValue || {}).join(",")
         error = new AppError(`Duplicate value for ${fields}`, 400)
     }
+
+    const controllerName = req._controllerName || "unknownController"
+    const log = createControllerLogger(controllerName)
+
+    //logs full error in file
+    log.error(req, "Request failed", err, {
+        statusCode: error.statusCode || 500,
+        message: error.message,
+        status: error.status || "error",
+        isOperational: error.isOperational || false,
+
+    })
 
     // If not operational, hiding details 
    if (!error.isOperational) {

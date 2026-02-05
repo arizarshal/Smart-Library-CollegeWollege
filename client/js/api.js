@@ -6,11 +6,16 @@ function getToken() {
 
 async function apiFetch(url, options = {}) {
   const token = getToken();
-  return fetch(BASE_URL + url, {
+
+  //  console.log("console from api.js");
+  const response = await fetch(BASE_URL + url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
     },
   });
+
+  // console.log(response);
+  return response
 }

@@ -1,3 +1,10 @@
 {
-    "liveServer.settings.port": 5501
+    "liveServer.settings.port": 5502,
+    "liveServer.settings.root": "/client",
+    "liveServer.settings.ignoreFiles": [
+        "**/node_modules/**",
+        "**/backend/**",
+        "**/.git/**"
+    ],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

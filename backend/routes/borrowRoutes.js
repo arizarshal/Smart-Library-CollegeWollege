@@ -10,11 +10,12 @@ import { validateBorrow,
   getBorrowHistory
 } from "../controllers/borrowController.js";
 import getMostBorrowedBooksByTitle from "../controllers/borrowAnalyticsController.js";
-
+import { tagController } from '../middleware/globalLogFileIdentifier.js';
 
 const router = express.Router();
 
 router.use(authMiddleware, authorizeRoles('USER', 'ADMIN'));
+router.use(tagController("borrowAnalyticsController"));
 
 router.post("/validate", validateBorrow);
 router.post("/calculate", calculateBorrowCost)
